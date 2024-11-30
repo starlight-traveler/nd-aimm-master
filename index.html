@@ -4,6 +4,8 @@
 <head>
     <title>NDAIMM - Live Logs Viewer</title>
     <style>
+        /* Existing styles */
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121212;
@@ -12,22 +14,157 @@
             padding: 0;
         }
 
-        h1 {
-            text-align: center;
-            color: #ffffff;
-            padding: 20px 0;
-            margin: 0;
+        /* Updated styles for the navigation bar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             background-color: #1f1f1f;
-            font-size: 2em;
-            letter-spacing: 2px;
+            padding: 10px 20px;
+            /* Added horizontal padding */
         }
 
+        .navbar h1 {
+            margin: 0;
+            font-size: 2em;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-links li {
+            margin: 0 15px;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1em;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00e676;
+            /* Highlight color on hover */
+        }
+
+        /* Added style for an empty div to balance the navbar */
+        .navbar .nav-spacer {
+            flex: 0.5;
+        }
+
+        /* Rest of your existing styles */
+
+        /* New containers */
         #container {
+            padding: 20px;
+        }
+
+        #buttons-and-lights {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        #boxes-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            padding: 20px;
         }
+
+        /* Styles for buttons and big lights */
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .styled-button {
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+
+        .styled-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .styled-button.active {
+            background-color: #3a3a3a;
+        }
+
+        .button-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #00e676;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .styled-button.active .button-indicator {
+            display: block;
+        }
+
+        .big-lights {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .big-light-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px;
+        }
+
+        .big-light {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #555;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .big-light.active {
+            background-color: var(--light-color, #00e676);
+            box-shadow: 0 0 15px var(--light-color, #00e676);
+        }
+
+        .light-label {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #e0e0e0;
+            text-align: center;
+        }
+
+        /* Adjusted styles */
 
         .box {
             background-color: #1e1e1e;
@@ -118,7 +255,8 @@
             flex-grow: 1;
             color: #dcdcdc;
             background-color: #1b1b1b;
-            font-size: 0.9em;
+            font-size: 0.8em;
+            /* Made the font smaller */
         }
 
         .log-entry {
@@ -129,7 +267,8 @@
 
         .timestamp {
             color: #888;
-            font-size: 0.85em;
+            font-size: 0.8em;
+            /* Adjusted font size */
             margin-right: 10px;
         }
 
@@ -203,9 +342,70 @@
 </head>
 
 <body>
-    <h1>NDAIMM</h1>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <!-- Empty div to balance the navbar -->
+        <div class="nav-spacer"></div>
+
+        <!-- Centered NDAIMM -->
+        <h1>NDAIMM</h1>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/status">Status</a></li>
+            <li><a href="/config">Config</a></li>
+            <li><a href="http://example.com" target="_blank">External Link</a></li>
+            <!-- Add more links as needed -->
+        </ul>
+    </div>
+
     <div id="container">
-        <!-- Boxes will be added here by JavaScript -->
+        <!-- Buttons and big lights -->
+        <div id="buttons-and-lights">
+            <div class="button-container">
+                <button id="button1" class="styled-button">Restart<span class="button-indicator"></span></button>
+                <button id="button2" class="styled-button">Shutdown<span class="button-indicator"></span></button>
+                <button id="button3" class="styled-button">Takeoff<span class="button-indicator"></span></button>
+                <button id="button4" class="styled-button">RTL<span class="button-indicator"></span></button>
+                <button id="button5" class="styled-button">Manual<span class="button-indicator"></span></button>
+                <button id="button6" class="styled-button">Hold<span class="button-indicator"></span></button>
+            </div>
+            <div class="big-lights">
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-1"></div>
+                    <div class="light-label">Emergency</div>
+                </div>
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-2"></div>
+                    <div class="light-label">Power Fault</div>
+                </div>
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-3"></div>
+                    <div class="light-label">Heartbeat Fault</div>
+                </div>
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-4"></div>
+                    <div class="light-label">Shutdown Fault</div>
+                </div>
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-5"></div>
+                    <div class="light-label">Water Fault</div>
+                </div>
+                <div class="big-light-container">
+                    <div class="big-light" id="big-light-6"></div>
+                    <div class="light-label">Unknown Error</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical messages box -->
+        <div id="critical-box"></div>
+
+        <!-- Boxes container -->
+        <div id="boxes-container">
+            <!-- Boxes for ports will be added here by JavaScript -->
+        </div>
     </div>
     <script>
         const ports = [9001, 9002, 9003, 9004, 9005, 9006];
@@ -247,11 +447,49 @@
             },
         };
 
-        // Create boxes for each port
+        // Configuration for big lights
+        const bigLightConfig = {
+            0: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event one'),
+                color: '#ff1744'  // Red
+            },
+            1: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event two'),
+                color: '#ffea00'  // Yellow
+            },
+            2: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event three'),
+                color: '#00e676'  // Green
+            },
+            3: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event four'),
+                color: '#2979ff'  // Blue
+            },
+            4: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event five'),
+                color: '#d500f9'  // Purple
+            },
+            5: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event six'),
+                color: '#ff6d00'  // Orange
+            }
+        };
+
+        // Mapping ports to descriptive names
+        const portNames = {
+            9001: "Main Computer",
+            9002: "Auxiliary Computer",
+            9003: "Startup Computer",
+            9004: "Drone Computer",
+            9005: "Stop Computer", // Replace as needed
+            9006: "Port 9006"  // Replace as needed
+        };
+
+        // Create critical messages box
         const container = document.getElementById('container');
+        const boxesContainer = document.getElementById('boxes-container');
         const boxes = {};
 
-        // Critical messages box
         const criticalBox = document.createElement('div');
         criticalBox.className = 'box critical-box';
         criticalBox.innerHTML = `
@@ -273,7 +511,7 @@
             </div>
             <div class="log-area" id="log-area-critical"></div>
         `;
-        container.appendChild(criticalBox);
+        document.getElementById('critical-box').appendChild(criticalBox);
         boxes['critical'] = {
             logArea: document.getElementById(`log-area-critical`),
             statusLights: [...Array(8)].map((_, i) => document.getElementById(`light-critical-${i}`)),
@@ -284,12 +522,13 @@
             }
         };
 
+        // Create boxes for each port
         ports.forEach(port => {
             const box = document.createElement('div');
             box.className = 'box';
             box.innerHTML = `
                 <div class="box-header">
-                    <h2>Port ${port}</h2>
+                    <h2>${portNames[port] || `Port ${port}`}</h2>
                     <div class="filter">
                         <select id="filter-${port}">
                             <option value="ALL">All Levels</option>
@@ -306,7 +545,7 @@
                 </div>
                 <div class="log-area" id="log-area-${port}"></div>
             `;
-            container.appendChild(box);
+            boxesContainer.appendChild(box);
             boxes[port] = {
                 logArea: document.getElementById(`log-area-${port}`),
                 statusLights: [...Array(8)].map((_, i) => document.getElementById(`light-${port}-${i}`)),
@@ -327,7 +566,7 @@
 
             // Shorten timestamp
             const timestamp = new Date(logEntry.timestamp);
-            logEntry.shortTimestamp = timestamp.toLocaleTimeString();
+            logEntry.shortTimestamp = timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 
             // Display log in the corresponding box
             if (boxes[port]) {
@@ -340,6 +579,9 @@
                 addLogEntryToBox(logEntry, boxes['critical']);
                 handleStatusLights(logEntry, boxes['critical'].statusLights);
             }
+
+            // Handle big lights based on log messages
+            handleBigLightsByLog(logEntry);
         };
 
         function addLogEntryToBox(logEntry, box) {
@@ -393,6 +635,22 @@
             });
         }
 
+        // Function to handle big lights based on log messages
+        function handleBigLightsByLog(logEntry) {
+            Object.keys(bigLightConfig).forEach(index => {
+                const config = bigLightConfig[index];
+                const bigLight = document.getElementById(`big-light-${parseInt(index) + 1}`);
+                if (config.trigger(logEntry)) {
+                    bigLight.classList.add('active');
+                    bigLight.style.setProperty('--light-color', config.color);
+                    // Reset the light after some time
+                    setTimeout(() => {
+                        bigLight.classList.remove('active');
+                    }, 5000);
+                }
+            });
+        }
+
         // Add filter functionality to each box
         Object.keys(boxes).forEach(boxKey => {
             const box = boxes[boxKey];
@@ -429,6 +687,52 @@
 
             logArea.scrollTop = logArea.scrollHeight;
         }
+
+        // Add event listeners to buttons
+        const buttonPressIndicators = {};
+
+        function handleButtonPress(buttonId) {
+            const button = document.getElementById(buttonId);
+            button.classList.add('active');
+            // Optionally disable the button temporarily
+            button.disabled = true;
+
+            // Re-enable button after some time
+            setTimeout(() => {
+                button.classList.remove('active');
+                button.disabled = false;
+            }, 2000); // Adjust the time as needed
+        }
+
+        document.getElementById('button1').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button1'}));
+            handleButtonPress('button1');
+        });
+
+        document.getElementById('button2').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button2'}));
+            handleButtonPress('button2');
+        });
+
+        document.getElementById('button3').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button3'}));
+            handleButtonPress('button3');
+        });
+
+        document.getElementById('button4').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button4'}));
+            handleButtonPress('button4');
+        });
+
+        document.getElementById('button5').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button5'}));
+            handleButtonPress('button5');
+        });
+
+        document.getElementById('button6').addEventListener('click', () => {
+            ws.send(JSON.stringify({action: 'button_click', buttonId: 'button6'}));
+            handleButtonPress('button6');
+        });
     </script>
 </body>
 

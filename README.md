@@ -366,3 +366,69 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 **Feel free to contribute, suggest improvements, or report issues by opening an [issue](https://github.com/yourusername/ndaimm-live-logs-viewer/issues) on GitHub.**
+
+```html
+// Configuration for status lights
+        const statusLightConfig = {
+            0: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('error'),
+                color: '#ff1744'  // Red
+            },
+            1: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('warning'),
+                color: '#ffea00'  // Yellow
+            },
+            2: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('connected'),
+                color: '#00e676'  // Green
+            },
+            3: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('disconnected'),
+                color: '#ff6d00'  // Orange
+            },
+            4: {
+                trigger: (logEntry) => logEntry.level === 'CRITICAL',
+                color: '#d500f9'  // Purple
+            },
+            5: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('processing'),
+                color: '#2979ff'  // Blue
+            },
+            6: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('uploaded'),
+                color: '#00bfa5'  // Teal
+            },
+            7: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('executed'),
+                color: '#651fff'  // Deep Purple
+            },
+        };
+
+        // Configuration for big lights
+        const bigLightConfig = {
+            0: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event one'),
+                color: '#ff1744'  // Red
+            },
+            1: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event two'),
+                color: '#ffea00'  // Yellow
+            },
+            2: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event three'),
+                color: '#00e676'  // Green
+            },
+            3: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event four'),
+                color: '#2979ff'  // Blue
+            },
+            4: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event five'),
+                color: '#d500f9'  // Purple
+            },
+            5: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('event six'),
+                color: '#ff6d00'  // Orange
+            }
+        };
+```

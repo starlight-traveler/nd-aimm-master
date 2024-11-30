@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NDAIMM - Live Logs Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            padding: 20px 0;
+            margin: 0;
+            background-color: #1f1f1f;
+            font-size: 2em;
+            letter-spacing: 2px;
+        }
+
+        #container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .box {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            margin: 15px;
+            flex: 1 1 calc(33% - 60px);
+            max-width: calc(33% - 60px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .critical-box {
+            flex: 1 1 100%;
+            max-width: 100%;
+            border: 2px solid #ff1744;
+        }
+
+        .box-header {
+            padding: 10px 15px;
+            background-color: #272727;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .box-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #f0f0f0;
+        }
+
+        .filter {
+            margin-left: 15px;
+        }
+
+        .filter select {
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 5px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            outline: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns%3d"http%3a//www.w3.org/2000/svg"%20viewBox%3d"0%200%204%205"><path%20fill%3d"%23e0e0e0"%20d%3d"M2%205L0%200h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 8px 10px;
+            padding-right: 25px;
+            /* Make room for arrow */
+        }
+
+        .filter select::-ms-expand {
+            display: none;
+        }
+
+        .status-lights {
+            display: flex;
+            margin-left: auto;
+            /* Push to the right */
+        }
+
+        .status-light {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-left: 5px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .active {
+            background-color: var(--light-color, #00e676);
+            box-shadow: 0 0 8px var(--light-color, #00e676);
+        }
+
+        .log-area {
+            padding: 10px 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+            color: #dcdcdc;
+            background-color: #1b1b1b;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.85em;
+            margin-right: 10px;
+        }
+
+        .level {
+            font-weight: bold;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Styles for different log levels */
+        .level-DEBUG {
+            color: #2979ff;
+            /* Blue */
+        }
+
+        .level-INFO {
+            color: #00e676;
+            /* Green */
+        }
+
+        .level-WARNING {
+            color: #ffea00;
+            /* Yellow */
+        }
+
+        .level-ERROR {
+            color: #ff1744;
+            /* Red */
+        }
+
+        .level-CRITICAL {
+            color: #d500f9;
+            /* Purple */
+            font-weight: bold;
+        }
+
+        .message {
+            display: inline-block;
+            color: #e0e0e0;
+        }
+
+        /* Scrollbar styling */
+        .log-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-area::-webkit-scrollbar-track {
+            background: #1b1b1b;
+        }
+
+        .log-area::-webkit-scrollbar-thumb {
+            background-color: #555;
+            border-radius: 4px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .box {
+                flex: 1 1 calc(50% - 60px);
+                max-width: calc(50% - 60px);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .box {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>NDAIMM</h1>
+    <div id="container">
+        <!-- Boxes will be added here by JavaScript -->
+    </div>
+    <script>
+        const ports = [9001, 9002, 9003, 9004, 9005, 9006];
+        const MAX_MESSAGES_PER_BOX = 15; // Adjust as needed
+
+        // Configuration for status lights
+        const statusLightConfig = {
+            0: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('error'),
+                color: '#ff1744'  // Red
+            },
+            1: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('warning'),
+                color: '#ffea00'  // Yellow
+            },
+            2: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('connected'),
+                color: '#00e676'  // Green
+            },
+            3: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('disconnected'),
+                color: '#ff6d00'  // Orange
+            },
+            4: {
+                trigger: (logEntry) => logEntry.level === 'CRITICAL',
+                color: '#d500f9'  // Purple
+            },
+            5: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('processing'),
+                color: '#2979ff'  // Blue
+            },
+            6: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('uploaded'),
+                color: '#00bfa5'  // Teal
+            },
+            7: {
+                trigger: (logEntry) => logEntry.message.toLowerCase().includes('executed'),
+                color: '#651fff'  // Deep Purple
+            },
+        };
+
+        // Create boxes for each port
+        const container = document.getElementById('container');
+        const boxes = {};
+
+        // Critical messages box
+        const criticalBox = document.createElement('div');
+        criticalBox.className = 'box critical-box';
+        criticalBox.innerHTML = `
+            <div class="box-header">
+                <h2>Critical Messages</h2>
+                <div class="filter">
+                    <select id="filter-critical">
+                        <option value="ALL">All Levels</option>
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARNING">WARNING</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                    </select>
+                </div>
+                <div class="status-lights" id="status-lights-critical">
+                    ${[...Array(8)].map((_, i) => `<div class="status-light" id="light-critical-${i}"></div>`).join('')}
+                </div>
+            </div>
+            <div class="log-area" id="log-area-critical"></div>
+        `;
+        container.appendChild(criticalBox);
+        boxes['critical'] = {
+            logArea: document.getElementById(`log-area-critical`),
+            statusLights: [...Array(8)].map((_, i) => document.getElementById(`light-critical-${i}`)),
+            messages: [],
+            displayedMessages: [],
+            filters: {
+                level: 'ALL'
+            }
+        };
+
+        ports.forEach(port => {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerHTML = `
+                <div class="box-header">
+                    <h2>Port ${port}</h2>
+                    <div class="filter">
+                        <select id="filter-${port}">
+                            <option value="ALL">All Levels</option>
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+                    <div class="status-lights" id="status-lights-${port}">
+                        ${[...Array(8)].map((_, i) => `<div class="status-light" id="light-${port}-${i}"></div>`).join('')}
+                    </div>
+                </div>
+                <div class="log-area" id="log-area-${port}"></div>
+            `;
+            container.appendChild(box);
+            boxes[port] = {
+                logArea: document.getElementById(`log-area-${port}`),
+                statusLights: [...Array(8)].map((_, i) => document.getElementById(`light-${port}-${i}`)),
+                messages: [],
+                displayedMessages: [],
+                filters: {
+                    level: 'ALL'
+                }
+            };
+        });
+
+        // WebSocket setup
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+
+        ws.onmessage = function (event) {
+            const logEntry = JSON.parse(event.data);
+            const port = logEntry.port;
+
+            // Shorten timestamp
+            const timestamp = new Date(logEntry.timestamp);
+            logEntry.shortTimestamp = timestamp.toLocaleTimeString();
+
+            // Display log in the corresponding box
+            if (boxes[port]) {
+                addLogEntryToBox(logEntry, boxes[port]);
+                handleStatusLights(logEntry, boxes[port].statusLights);
+            }
+
+            // If the message is critical, add it to the critical box
+            if (logEntry.level === 'CRITICAL' && boxes['critical']) {
+                addLogEntryToBox(logEntry, boxes['critical']);
+                handleStatusLights(logEntry, boxes['critical'].statusLights);
+            }
+        };
+
+        function addLogEntryToBox(logEntry, box) {
+            const {logArea, messages, displayedMessages, filters} = box;
+
+            // Store the message
+            messages.push(logEntry);
+
+            // Apply level filter
+            if (filters.level !== 'ALL' && logEntry.level !== filters.level) {
+                return;
+            }
+
+            // Create log entry element
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `
+                <span class="timestamp">[${logEntry.shortTimestamp}]</span>
+                <span class="level level-${logEntry.level}">${logEntry.level}</span>
+                <span class="message">${logEntry.message}</span>
+            `;
+            logArea.appendChild(div);
+            displayedMessages.push(div);
+            logArea.scrollTop = logArea.scrollHeight;
+
+            // Limit the number of displayed messages per box
+            if (displayedMessages.length > MAX_MESSAGES_PER_BOX) {
+                const oldMessageElement = displayedMessages.shift();
+                logArea.removeChild(oldMessageElement);
+            }
+
+            // Limit total stored messages
+            if (messages.length > 100) {
+                messages.shift();
+            }
+        }
+
+        // Function to handle status lights based on log messages
+        function handleStatusLights(logEntry, statusLights) {
+            Object.keys(statusLightConfig).forEach(index => {
+                const config = statusLightConfig[index];
+                const light = statusLights[index];
+                if (config.trigger(logEntry)) {
+                    light.classList.add('active');
+                    light.style.setProperty('--light-color', config.color);
+                    // Reset the light after some time
+                    setTimeout(() => {
+                        light.classList.remove('active');
+                    }, 5000);
+                }
+            });
+        }
+
+        // Add filter functionality to each box
+        Object.keys(boxes).forEach(boxKey => {
+            const box = boxes[boxKey];
+            const filterSelect = document.getElementById(`filter-${boxKey}`);
+            filterSelect.addEventListener('change', () => {
+                box.filters.level = filterSelect.value;
+                // Re-render messages based on the new filter
+                applyFilter(box);
+            });
+        });
+
+        function applyFilter(box) {
+            const {logArea, messages, displayedMessages, filters} = box;
+            // Clear current displayed messages
+            displayedMessages.forEach(msgElement => logArea.removeChild(msgElement));
+            displayedMessages.length = 0;
+
+            // Filter messages and re-display
+            const filteredMessages = messages.filter(logEntry => {
+                return filters.level === 'ALL' || logEntry.level === filters.level;
+            });
+
+            filteredMessages.slice(-MAX_MESSAGES_PER_BOX).forEach(logEntry => {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                div.innerHTML = `
+                    <span class="timestamp">[${logEntry.shortTimestamp}]</span>
+                    <span class="level level-${logEntry.level}">${logEntry.level}</span>
+                    <span class="message">${logEntry.message}</span>
+                `;
+                logArea.appendChild(div);
+                displayedMessages.push(div);
+            });
+
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

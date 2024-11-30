@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Live Logs - Multi-Port Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #c0c0c0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            padding: 20px 0;
+            margin: 0;
+            background-color: #282c34;
+        }
+
+        #container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .box {
+            background-color: #2e2e2e;
+            border: 1px solid #3e3e3e;
+            border-radius: 8px;
+            margin: 10px;
+            flex: 1 1 calc(33% - 40px);
+            max-width: calc(33% - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box-header {
+            padding: 10px;
+            background-color: #3a3f44;
+            border-bottom: 1px solid #4e545b;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .box-header h2 {
+            margin: 0;
+            font-size: 1.1em;
+            color: #fff;
+        }
+
+        .status-lights {
+            display: flex;
+        }
+
+        .status-light {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-left: 5px;
+        }
+
+        .active {
+            background-color: #28a745;
+        }
+
+        .log-area {
+            padding: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+            color: #dcdcdc;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #444;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+
+        .level {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .message {
+            display: inline-block;
+        }
+
+        /* Responsive design */
+        @media (max-width: 800px) {
+            .box {
+                flex: 1 1 calc(50% - 40px);
+                max-width: calc(50% - 40px);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .box {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Live Logs - Multi-Port Viewer</h1>
+    <div id="container">
+        <!-- Boxes will be added here by JavaScript -->
+    </div>
+    <script>
+        const ports = [9001, 9002, 9003, 9004, 9005, 9006];
+
+        // Create boxes for each port
+        const container = document.getElementById('container');
+        const boxes = {};
+
+        ports.forEach(port => {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerHTML = `
+                <div class="box-header">
+                    <h2>Port ${port}</h2>
+                    <div class="status-lights" id="status-lights-${port}">
+                        ${[...Array(8)].map((_, i) => `<div class="status-light" id="light-${port}-${i}"></div>`).join('')}
+                    </div>
+                </div>
+                <div class="log-area" id="log-area-${port}"></div>
+            `;
+            container.appendChild(box);
+            boxes[port] = {
+                logArea: document.getElementById(`log-area-${port}`),
+                statusLights: [...Array(8)].map((_, i) => document.getElementById(`light-${port}-${i}`))
+            };
+        });
+
+        // WebSocket setup
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+
+        ws.onmessage = function (event) {
+            const logEntry = JSON.parse(event.data);
+            const port = logEntry.port;
+
+            // Display log in the corresponding box
+            if (boxes[port]) {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                div.innerHTML = `
+                    <span class="timestamp">[${logEntry.timestamp}]</span>
+                    <span class="level">${logEntry.level}</span>
+                    <span class="message">${logEntry.message}</span>
+                `;
+                boxes[port].logArea.appendChild(div);
+                boxes[port].logArea.scrollTop = boxes[port].logArea.scrollHeight;
+
+                // Handle status lights
+                handleStatusLights(logEntry, boxes[port].statusLights);
+            }
+        };
+
+        // Function to handle status lights based on log messages
+        function handleStatusLights(logEntry, statusLights) {
+            // Example: Turn on a status light if the message contains a specific keyword
+            const message = logEntry.message.toLowerCase();
+
+            if (message.includes('error')) {
+                statusLights[0].classList.add('active');
+            }
+            if (message.includes('warning')) {
+                statusLights[1].classList.add('active');
+            }
+            if (message.includes('connected')) {
+                statusLights[2].classList.add('active');
+            }
+            if (message.includes('disconnected')) {
+                statusLights[2].classList.remove('active');
+            }
+            // Add more conditions as needed for other status lights
+
+            // Example: Reset status lights after some time
+            setTimeout(() => {
+                statusLights.forEach(light => light.classList.remove('active'));
+            }, 5000); // Reset after 5 seconds
+        }
+    </script>
+</body>
+
+</html>
